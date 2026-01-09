@@ -1,0 +1,10 @@
+1;[A]pex Analytics      ;+ money
+2;[B]lue Harbor Foods   ;+ shares
+3;[C]opperline Mining  ;+ assets
+1;[D]elta Dawn Media   ;+ money
+2;[E]vergreen Outfitters;+ shares
+3;[F]usionTech Labs    ;+ assets
+1;[G]olden Gate Goods  ;+ money
+2;[H]ighland Breweries;+ shares
+3;[I]ronclad Security ;+ assets
+1;[J]upiter Jeans Co   ;+ money
