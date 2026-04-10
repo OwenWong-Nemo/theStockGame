@@ -41,6 +41,7 @@ public:
     {
         float p = setPriceChangePercentage();
         currentPrice *= (1.0f + p);
+        priceChangePercentage = p;
         isPriceChanged = true;
     }
 
