@@ -1,4 +1,6 @@
 #include "stock.hpp"
+#include <iostream>
+#include "../utils/randomHelper.hpp"
 
 Stock::Stock(std::string n) {
     name = n;
