@@ -25,6 +25,15 @@ void Stock::updatePrice() {
     isPriceChanged = true;
 }
 
+void Stock::applyPriceMultiplier(float factor) {
+    if (factor <= 0.f) {
+        return;
+    }
+    currentPrice *= factor;
+    priceChangePercentage = factor - 1.0f;
+    isPriceChanged = true;
+}
+
 std::string Stock::getName() const { return name; }
 float Stock::getCurrentPrice() const { return currentPrice; }
 float Stock::getPriceChangePercentage() const { return priceChangePercentage; }

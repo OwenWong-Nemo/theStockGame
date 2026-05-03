@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../model/news.hpp"
 #include "../model/stock.hpp"
 
 enum class GameState { Market, News, Portfolio, Sell };
@@ -20,6 +21,7 @@ public:
         float balance,
         const std::vector<Stock>& market,
         const std::unordered_map<std::string, int>& portfolio,
+        const News& pendingNews,
         bool showBuyPopup,
         int selectedStockIndex,
         int buyShares,
@@ -27,7 +29,9 @@ public:
         bool showSellPopup,
         const std::string& sellSelectedSymbol,
         int sellShares,
-        const std::string& sellMessage
+        const std::string& sellMessage,
+        const std::string& gameOverMessage,
+        bool gameOverIsWin
     );
 
     bool isNextDayClicked(sf::Vector2f mousePos) const;

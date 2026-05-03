@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../model/news.hpp"
 #include "../model/stock.hpp"
 #include "../view/gameRender.hpp"
 
@@ -14,6 +15,7 @@ public:
         sf::Vector2f mousePos,
         GameRender& gameRender,
         std::vector<Stock>& market,
+        News& pendingNews,
         GameState& currentState,
         float balance,
         int& day,

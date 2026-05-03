@@ -17,6 +17,8 @@ public:
     float setStartingPrice();
     float setPriceChangePercentage();  
     void updatePrice();
+    /// One-time multiplier (e.g. news gap) before the regular `updatePrice` random walk.
+    void applyPriceMultiplier(float factor);
     
     // Accessor methods (const: safe to call on const Stock&, e.g. from UI)
     std::string getName() const;

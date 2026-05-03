@@ -5,12 +5,31 @@
 #include <vector>
 #include "controller/keyHandler.hpp"
 #include "controller/mouseHandler.hpp"
+#include "model/news.hpp"
 #include "model/stock.hpp"
 #include "view/gameRender.hpp"
 
+namespace {
+
+constexpr int kWinDeadlineDay = 10;
+constexpr int kWinTargetBalance = 500;
+
+/// 1 = win, 0 = keep playing, -1 = lose (deadline passed without enough balance).
+[[nodiscard]] int checkWinCondition(int gameDay, float gameBalance) {
+    if (gameDay <= kWinDeadlineDay && gameBalance >= static_cast<float>(kWinTargetBalance)) {
+        return 1;
+    }
+    if (gameDay <= kWinDeadlineDay) {
+        return 0;
+    }
+    return -1;
+}
+
+}  // namespace
+
 int main() {
     // Setup Window
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "Stock Game MVP");
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "Stock Game");
     window.setFramerateLimit(60);
 
     // Load Assets
@@ -18,11 +37,12 @@ int main() {
     if (!font.openFromFile("assets/font.ttf")) return -1;
     GameRender gameRender(font);
 
-    // Game Data
+    // Load Game Data
     GameState currentState = GameState::Market;
     int day = 1;
     float balance = 100.0f;
 
+    // Initialise Market Data
     std::vector<Stock> market;
     market.reserve(5);
     market.emplace_back("TECH NOVA");
@@ -31,6 +51,9 @@ int main() {
     market.emplace_back("CYBER CORE");
     market.emplace_back("AERO DYNAMICS");
 
+    News pendingNews = News::generateRandom(market);
+
+    // Initialise Portfolio Data
     std::unordered_map<std::string, int> portfolio;
     bool showBuyPopup = false;
     int selectedStockIndex = -1;
@@ -42,15 +65,36 @@ int main() {
     int sellShares = 1;
     std::string sellMessage;
 
+    std::string gameOverMessage;
+    bool gameOverIsWin = false;
+
     // Main Game Loop
     while (window.isOpen()) {
+        if (gameOverMessage.empty()) {
+            const int result = checkWinCondition(day, balance);
+            if (result == 1) {
+                gameOverMessage = "You win!";
+                gameOverIsWin = true;
+            } else if (result == -1) {
+                gameOverMessage = "You lose!\nOut of time — reach $" + std::to_string(kWinTargetBalance) + " by end of day "
+                    + std::to_string(kWinDeadlineDay) + ".";
+                gameOverIsWin = false;
+            }
+        }
+
         // Event Polling
         while (const std::optional event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) window.close();
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
 
             if (event->is<sf::Event::KeyPressed>()) {
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
-                    if (showBuyPopup) {
+                    if (!gameOverMessage.empty()) {
+                        if (keyEvent->code == sf::Keyboard::Key::Enter || keyEvent->code == sf::Keyboard::Key::Escape) {
+                            window.close();
+                        }
+                    } else if (showBuyPopup) {
                         KeyHandler::handleBuyPopupKeyPress(
                             *keyEvent,
                             market,
@@ -78,12 +122,13 @@ int main() {
                 }
             }
 
-            if (event->is<sf::Event::MouseButtonPressed>()) {
+            if (event->is<sf::Event::MouseButtonPressed>() && gameOverMessage.empty()) {
                 sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
                 MouseHandler::handleMouseClick(
                     mousePos,
                     gameRender,
                     market,
+                    pendingNews,
                     currentState,
                     balance,
                     day,
@@ -107,6 +152,7 @@ int main() {
             balance,
             market,
             portfolio,
+            pendingNews,
             showBuyPopup,
             selectedStockIndex,
             buyShares,
@@ -114,7 +160,9 @@ int main() {
             showSellPopup,
             sellSelectedSymbol,
             sellShares,
-            sellMessage
+            sellMessage,
+            gameOverMessage,
+            gameOverIsWin
         );
     }
 

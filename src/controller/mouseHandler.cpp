@@ -10,6 +10,7 @@ void MouseHandler::handleMouseClick(
     sf::Vector2f mousePos,
     GameRender& gameRender,
     std::vector<Stock>& market,
+    News& pendingNews,
     GameState& currentState,
     float balance,
     int& day,
@@ -28,10 +29,12 @@ void MouseHandler::handleMouseClick(
     }
 
     if (gameRender.isNextDayClicked(mousePos)) {
+        pendingNews.applyToMarket(market);
         day++;
         for (auto& stock : market) {
             stock.updatePrice();
         }
+        pendingNews = News::generateRandom(market);
         currentState = GameState::Market;
     }
 

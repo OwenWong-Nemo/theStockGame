@@ -7,10 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "newsRenderer.hpp"
 #include "stockRenderer.hpp"
 
-GameRender::GameRender(const sf::Font& loadedFont)
-    : font(loadedFont),
+GameRender::GameRender(const sf::Font& loadedFont):
+      font(loadedFont),
       header({780.f, 60.f}),
       btnNextDay({120.f, 40.f}),
       mainArea({780.f, 400.f}),
@@ -59,6 +60,7 @@ void GameRender::drawFrame(
     float balance,
     const std::vector<Stock>& market,
     const std::unordered_map<std::string, int>& portfolio,
+    const News& pendingNews,
     bool showBuyPopup,
     int selectedStockIndex,
     int buyShares,
@@ -66,7 +68,9 @@ void GameRender::drawFrame(
     bool showSellPopup,
     const std::string& sellSelectedSymbol,
     int sellShares,
-    const std::string& sellMessage
+    const std::string& sellMessage,
+    const std::string& gameOverMessage,
+    bool gameOverIsWin
 )
 {
     headerText.setString("Day: " + std::to_string(day) + "  |  Balance: $" + std::to_string(static_cast<int>(balance)));
@@ -115,7 +119,7 @@ void GameRender::drawFrame(
 
         float y = 150.f;
         if (portfolio.empty()) {
-            sf::Text empty(font, "Nothing to sell — buy stocks in Market first.", 22);
+            sf::Text empty(font, "Nothing to sell", 22);
             empty.setPosition({40.f, y});
             window.draw(empty);
         } else {
@@ -129,9 +133,7 @@ void GameRender::drawFrame(
             }
         }
     } else if (currentState == GameState::News) {
-        sf::Text msg(font, getStateName(currentState), 30);
-        msg.setPosition({300.f, 250.f});
-        window.draw(msg);
+        NewsRenderer::draw(window, font, pendingNews);
     } else {
         sf::Text msg(font, getStateName(currentState), 30);
         msg.setPosition({300.f, 250.f});
@@ -174,7 +176,7 @@ void GameRender::drawFrame(
         details.setPosition({170.f, 240.f});
         window.draw(details);
 
-        sf::Text hint(font, "UP/DOWN change shares, ENTER confirm, ESC cancel", 18);
+        sf::Text hint(font, "UP/DOWN change shares, ENTER confirm, ESC cancel", 15);
         hint.setPosition({170.f, 360.f});
         hint.setFillColor(sf::Color(200, 200, 200));
         window.draw(hint);
@@ -256,6 +258,34 @@ void GameRender::drawFrame(
     window.draw(portLabel);
     window.draw(btnSell);
     window.draw(sellLabel);
+
+    if (!gameOverMessage.empty()) {
+        sf::RectangleShape overlay({800.f, 600.f});
+        overlay.setFillColor(sf::Color(0, 0, 0, 210));
+        window.draw(overlay);
+
+        sf::RectangleShape panel({600.f, 280.f});
+        panel.setFillColor(sf::Color(35, 35, 45));
+        panel.setOutlineThickness(2.f);
+        panel.setOutlineColor(sf::Color::White);
+        panel.setPosition({100.f, 160.f});
+        window.draw(panel);
+
+        const unsigned int titleSize = gameOverIsWin ? 40u : 28u;
+        sf::Text title(font, gameOverMessage, titleSize);
+        title.setFillColor(gameOverIsWin ? sf::Color(100, 255, 140) : sf::Color(255, 140, 140));
+        const sf::FloatRect tb = title.getLocalBounds();
+        title.setOrigin({tb.position.x + tb.size.x * 0.5f, tb.position.y + tb.size.y * 0.5f});
+        title.setPosition({400.f, 270.f});
+        window.draw(title);
+
+        sf::Text hint(font, "Press ENTER or ESC to close", 20u);
+        hint.setFillColor(sf::Color(200, 200, 200));
+        const sf::FloatRect hb = hint.getLocalBounds();
+        hint.setOrigin({hb.position.x + hb.size.x * 0.5f, hb.position.y + hb.size.y * 0.5f});
+        hint.setPosition({400.f, 380.f});
+        window.draw(hint);
+    }
 
     window.display();
 }
